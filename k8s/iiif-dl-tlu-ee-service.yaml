@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: iiif-dl-tlu-ee-service
+spec:
+  selector:
+    app: iiif-deployment
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  - name: iiif  
+    port: 9000
+    targetPort: 9000
+  type: ClusterIP

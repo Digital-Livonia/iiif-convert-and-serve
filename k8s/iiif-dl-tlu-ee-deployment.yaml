@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iiif-dl-tlu-ee-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: iiif-deployment
+  template:
+    metadata:
+      labels:
+        app: iiif-deployment
+    spec:
+      containers:
+        - name: iiif-deployment
+          # ⚠️ use SHA tag here — CI/CD will patch this automatically
+          image: ghcr.io/digital-livonia/iiif-convert-and-serve:sha-SOME_SHA
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+            - containerPort: 9000
+          env:
+            - name: S3_HOST
+              value: "https://s3.hpc.ut.ee"
+            - name: S3_BUCKET
+              value: "dl-tlu-ee"
+            - name: S3_ID
+              valueFrom:
+                secretKeyRef:
+                  name: tu-s3-credentials
+                  key: accessKeyId
+            - name: S3_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tu-s3-credentials
+                  key: secretAccessKey
+            # Uncomment if needed
+            # - name: FLASK_TOKEN
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: flask-secrets
+            #       key: token
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
