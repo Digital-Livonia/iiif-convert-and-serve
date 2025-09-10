@@ -1,0 +1,57 @@
+#!/bin/sh
+
+
+# Setup input directory if this does not exist
+if [ ! -d "/images" ]; then
+	mkdir /images && chown www-data:www-data /images
+fi
+
+# Setup output directory if this does not exist
+if [ ! -d "/home/tiff" ]; then
+	mkdir /home/tiff && chown www-data:www-data /home/tiff
+fi
+
+
+# Run daemonized Lighttpd
+lighttpd -f /etc/lighttpd/lighttpd.conf
+
+
+cd /usr/local/bin
+
+# Setup environment variables
+cp convert.ini run.ini
+if [ -n "$COMPRESSION" ]; then
+	echo "env=FLASK_COMPRESSION=${COMPRESSION}" >> run.ini
+fi
+
+if [ -n "$QUALITY" ]; then
+	echo "env=FLASK_QUALITY=${QUALITY}" >> run.ini
+fi
+
+if [ -n "$TILESIZE" ]; then
+	echo "env=FLASK_TILESIZE=${TILESIZE}" >> run.ini
+fi
+
+if [ -n "$TOKEN" ]; then
+	echo "env=FLASK_TOKEN=${TOKEN}" >> run.ini
+fi
+
+if [ -n "$S3_HOST" ]; then
+	echo "env=FLASK_S3_HOST=${S3_HOST}" >> run.ini
+fi
+
+if [ -n "$S3_ID" ]; then
+	echo "env=FLASK_S3_ID=${S3_ID}" >> run.ini
+fi
+
+if [ -n "$S3_SECRET" ]; then
+	echo "env=FLASK_S3_SECRET=${S3_SECRET}" >> run.ini
+fi
+
+if [ -n "$S3_BUCKET" ]; then
+	echo "env=FLASK_S3_BUCKET=${S3_BUCKET}" >> run.ini
+fi
+
+
+# Run our flask app through uwsgi
+uwsgi --ini run.ini --uid 33 --gid 33
