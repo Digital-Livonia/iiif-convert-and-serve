@@ -233,7 +233,19 @@ def convert(name):
 
         # Check whether output image already exists
         if os.access( output, os.W_OK ):
-            raise Exception( "TIFF already exists" )
+            im = pyvips.Image.new_from_file( output )
+            width = im.width
+            height = im.height
+            size = os.path.getsize( output )
+            if size == 0:
+                raise Exception( 'Empty output TIFF' )
+            return {
+                "image": name,
+                "width": width,
+                "height": height,
+                "bytes": size,
+                "time": 0
+            }, 200
         
 
         # If input does not exist locally and S3 has been setup, download image
@@ -263,9 +275,15 @@ def convert(name):
 
         # Time our transcoding
         start = perf_counter()
+
+        # Handle 1 band images when using webp compression
+        if im.bands == 1 and compression == 'webp':
+            im = im.bandjoin([im,im]).copy(interpretation='rgb')
+
         im.tiffsave( output, compression=compression, tile=True,
                      tile_width=tilesize, tile_height=tilesize, Q=quality,
                      pyramid=True )
+
         end = perf_counter()
 
         # Check output size
