@@ -312,6 +312,9 @@ def convert(name):
 
     # Handle exceptions
     except FileNotFoundError as err:
+        if not keep:
+            os.remove( image )
+
         return {
             "image": name,
             "error": err.args[0],
@@ -321,6 +324,9 @@ def convert(name):
         }, 404
 
     except botocore.exceptions.ClientError as err:
+        if not keep:
+            os.remove( image )
+
         return {
             "image": name,
             "error": f'S3 error when downloading {image}: {err.args[0]}',
@@ -330,6 +336,9 @@ def convert(name):
         }, 500
 
     except Exception as err:
+        if not keep:
+            os.remove( image )
+
         return {
             "image": name,
             "error": f'Error converting image {image}: {err.args[0]}',
