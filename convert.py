@@ -225,6 +225,10 @@ def convert(name):
         tilesize = request.args.get('tilesize')
 
 
+    # Time our transcoding
+    start = perf_counter()
+
+
     try:
 
         image = f'{PREFIX}{name}'
@@ -273,8 +277,6 @@ def convert(name):
         width = im.width
         height = im.height
 
-        # Time our transcoding
-        start = perf_counter()
 
         # Handle 1 band images when using webp compression
         if im.bands == 1 and compression == 'webp':
@@ -314,6 +316,7 @@ def convert(name):
             "image": name,
             "error": err.args[0],
             "action": "convert",
+            "time": perf_counter()-start,
             "success": False
         }, 404
 
@@ -322,6 +325,7 @@ def convert(name):
             "image": name,
             "error": f'S3 error when downloading {image}: {err.args[0]}',
             "action": "convert",
+            "time": perf_counter()-start,
             "success": False
         }, 500
 
@@ -330,6 +334,7 @@ def convert(name):
             "image": name,
             "error": f'Error converting image {image}: {err.args[0]}',
             "action": "convert",
+            "time": perf_counter()-start,
             "success": False
         }, 500
 
