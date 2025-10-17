@@ -3,7 +3,9 @@ kind: Deployment
 metadata:
   name: iiif-dl-tlu-ee-deployment
 spec:
-  replicas: 2
+  replicas: 1 # 👈 important, RWO PVC can only be mounted by one pod
+  strategy:
+    type: Recreate 
   selector:
     matchLabels:
       app: iiif-deployment
@@ -12,15 +14,18 @@ spec:
       labels:
         app: iiif-deployment
     spec:
+      securityContext:
+        fsGroup: 33
       containers:
         - name: iiif-deployment
-          # ⚠️ use SHA tag here — CI/CD will patch this automatically
-          image: ghcr.io/digital-livonia/iiif-convert-and-serve:sha-SOME_SHA
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/digital-livonia/iiif-convert-and-serve:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
             - containerPort: 9000
           env:
+            - name: COMPRESSION
+              value: "webp" #jpeg,webp,deflate,zstd,none
             - name: S3_HOST
               value: "https://s3.hpc.ut.ee"
             - name: S3_BUCKET
@@ -43,8 +48,15 @@ spec:
             #       key: token
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
               cpu: "500m"
-              memory: "512Mi"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "8Gi"
+          volumeMounts:
+            - name: iiif-storage
+              mountPath: /home/tiff
+      volumes:
+        - name: iiif-storage
+          persistentVolumeClaim:
+            claimName: iiif-dl-tlu-ee-pvc
