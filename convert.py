@@ -14,6 +14,7 @@
 from flask import Flask, request, abort
 from time import perf_counter
 import pyvips
+import tifftools
 import os
 import sys
 import glob
@@ -270,6 +271,28 @@ def convert(name):
         # Check image exists and is readable
         if not os.access( image, os.R_OK ):
             raise FileNotFoundError( f'Input image not readable' )
+
+
+
+        # First check whether this is a TIFF and whether it is already in tiled pyramid format
+        try:
+            tiff = tifftools.read_tiff( image )
+            if len( tiff['ifds'] ) > 0 and 322 in tiff['ifds'][0]['tags'] and tiff['ifds'][0]['tags'][322]['data'][0] > 0:
+                print( f'{name} is already in tiled pyramid TIFF format' )
+                width = tiff['ifds'][0]['tags'][256]['data'][0]
+                height = tiff['ifds'][0]['tags'][257]['data'][0]
+                size = os.path.getsize( image )
+                # Create symlink to source image
+                os.symlink( image, output )
+                return {
+                    "image": name,
+                    "width": width,
+                    "height": height,
+                    "bytes": size,
+                    "time": 0
+                }, 200
+        except:
+            print( f'{name} not a TIFF file, transcoding ...' )
 
 
         # Open image with vips

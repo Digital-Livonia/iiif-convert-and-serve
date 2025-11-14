@@ -51,7 +51,7 @@ COPY iipsrv.conf /etc/lighttpd/conf-enabled/iipsrv.conf
 COPY convert.py convert.ini run /usr/local/bin/
 
 # Install pyvips
-RUN python3 -m pip install pyvips --break-system-packages
+RUN python3 -m pip install pyvips tifftools --break-system-packages
 
 # Execute startup script
 ENTRYPOINT /usr/local/bin/run
