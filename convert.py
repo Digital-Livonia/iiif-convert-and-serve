@@ -282,8 +282,14 @@ def convert(name):
                 width = tiff['ifds'][0]['tags'][256]['data'][0]
                 height = tiff['ifds'][0]['tags'][257]['data'][0]
                 size = os.path.getsize( image )
-                # Create symlink to source image
-                os.symlink( image, output )
+
+                # If this was an S3 download (keep=False) physically move image, otherwise use a symlink
+                if keep == False:
+                    os.rename( image, output )
+                    keep == True  # Skip delete
+                else:
+                    os.symlink( image, output )
+
                 return {
                     "image": name,
                     "width": width,
