@@ -97,3 +97,7 @@ To transcode a list of images provided in a JSON array:
 To delete a list of images provided in a JSON array:
 
 % curl -X "DELETE" --header "Authorization: Bearer ABCDEFGH" -H 'Content-Type: application/json' --data '["image1.jpg","image2.jpg"]' http://localhost/
+
+Funding
+--
+This work was supported by the Estonian Research Council under grant PRG1276, “Digital Livonia: For a Digitally Enhanced Study of Medieval Livonia (c. 1200–1550)
