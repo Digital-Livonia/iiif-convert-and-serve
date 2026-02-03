@@ -4,6 +4,7 @@ metadata:
   name: iiif-dl-tlu-ee-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/limit-rps: "0"
 spec:
   ingressClassName: nginx
   rules:
